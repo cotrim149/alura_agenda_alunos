@@ -1,15 +1,20 @@
 package br.com.cotrim.agenda.dao;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import br.com.cotrim.agenda.modelo.Aluno;
+
 public class AlunoDAO extends SQLiteOpenHelper {
 
-    private String dataBaseName = "Agenda";
-    private int dataBaseVersion = 1;
     public AlunoDAO(Context context) {
-        super(context, dataBaseName, null, dataBaseVersion);
+        super(context, "Agenda", null, 1);
     }
 
     @Override
@@ -23,5 +28,40 @@ public class AlunoDAO extends SQLiteOpenHelper {
         String sqlDropTableAlunos = "DROP TABLE IF EXISTS Alunos;";
         db.execSQL(sqlDropTableAlunos);
         onCreate(db);
+    }
+
+    public void insere(Aluno aluno) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("nome", aluno.getNome());
+        contentValues.put("endereco", aluno.getEndereco());
+        contentValues.put("telefone", aluno.getTelefone());
+        contentValues.put("site", aluno.getSite());
+        contentValues.put("nota", aluno.getNota());
+
+        db.insert("Alunos", null,contentValues);
+    }
+
+    public List<Aluno> buscaAlunos() {
+        String sqlRetriveAllAlunos = "SELECT * FROM Alunos;";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery(sqlRetriveAllAlunos, null);
+
+        List<Aluno> alunos = new ArrayList<Aluno>();
+
+        while (c.moveToNext()) {
+            Aluno aluno = new Aluno();
+            aluno.setId(c.getLong(c.getColumnIndex("id")));
+            aluno.setNome(c.getString(c.getColumnIndex("nome")));
+            aluno.setEndereco(c.getString(c.getColumnIndex("endereco")));
+            aluno.setTelefone(c.getString(c.getColumnIndex("telefone")));
+            aluno.setNota(c.getDouble(c.getColumnIndex("nota")));
+            aluno.setSite(c.getString(c.getColumnIndex("site")));
+
+            alunos.add(aluno);
+        }
+        c.close();
+        return alunos;
     }
 }
